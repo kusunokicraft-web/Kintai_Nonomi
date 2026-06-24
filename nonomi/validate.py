@@ -27,6 +27,10 @@ def validate_rows(rows: List[Dict[str, str]]) -> List[str]:
             continue
         if r.get("day") != config.jp_weekday(r["date"]):
             problems.append(f"{loc}: day が date と一致しません。")
+        if (r.get("channel") or "").strip() not in config.CHANNEL_KEYS:
+            problems.append(
+                f"{loc}: channel が未設定/不明です（{r.get('channel')!r}）。"
+            )
         if not _HM.match(r.get("start", "")):
             problems.append(f"{loc}: start の時刻書式が変です。")
 

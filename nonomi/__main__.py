@@ -23,8 +23,12 @@ def _today() -> str:
 
 
 def cmd_clock_in(a: argparse.Namespace) -> None:
-    row = clock.clock_in(project=a.project, memo=a.memo)
-    print(f"始めました：{row['date']}({row['day']}) {row['start']}〜  {row['project']} / {row['memo']}")
+    row = clock.clock_in(channel=a.channel, project=a.project, memo=a.memo)
+    ch = config.CHANNELS.get(row["channel"], row["channel"])
+    print(
+        f"始めました：{row['date']}({row['day']}) {row['start']}〜  "
+        f"[{ch}] {row['project']} / {row['memo']}"
+    )
 
 
 def cmd_clock_out(a: argparse.Namespace) -> None:
@@ -47,15 +51,28 @@ def cmd_status(a: argparse.Namespace) -> None:
         print("いまは進行中のセッションはありません。")
     else:
         r = rows[idx]
-        print(f"進行中：{r['date']}({r['day']}) {r['start']}〜  {r['project']} / {r['memo']}")
+        ch = config.CHANNELS.get(r.get("channel", ""), r.get("channel", ""))
+        print(
+            f"進行中：{r['date']}({r['day']}) {r['start']}〜  "
+            f"[{ch}] {r['project']} / {r['memo']}"
+        )
     print("\n[進行中の動画案件]")
     for s in active.load():
-        print(f"  slot{s['slot']}: {s['slug']}  {s.get('name','')}  {s.get('stage','')}  {s.get('last','')}")
+        ch = config.CHANNELS.get(s.get("channel", ""), s.get("channel", ""))
+        print(
+            f"  slot{s['slot']}: [{ch}] {s['slug']}  {s.get('name','')}  "
+            f"{s.get('stage','')}  {s.get('last','')}"
+        )
 
 
 def cmd_active(a: argparse.Namespace) -> None:
     if a.action == "add":
-        active.add(slug=a.slug, name=a.name or "", stage=a.stage or "①", last=_today())
+        if not a.channel:
+            raise ValueError("add には --channel が必要です。")
+        active.add(
+            channel=a.channel, slug=a.slug, name=a.name or "",
+            stage=a.stage or "①", last=_today(),
+        )
     elif a.action == "touch":
         active.touch(slug=a.slug, stage=a.stage, last=_today())
     elif a.action == "close":
@@ -68,6 +85,10 @@ def build_parser() -> argparse.ArgumentParser:
     sub = p.add_subparsers(dest="cmd", required=True)
 
     ci = sub.add_parser("clock-in", help="始める（起票）")
+    ci.add_argument(
+        "--channel", required=True, choices=sorted(config.CHANNEL_KEYS),
+        help="チャンネル slug（kapuchu/ijindamon/gomasuke）または common",
+    )
     ci.add_argument("--project", required=True, help="video:<slug> または youtube")
     ci.add_argument("--memo", required=True)
     ci.set_defaults(func=cmd_clock_in)
@@ -87,6 +108,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     ac = sub.add_parser("active", help="進行中案件スロットの操作")
     ac.add_argument("action", choices=["add", "touch", "close"])
+    ac.add_argument("--channel", choices=sorted(config.CHANNEL_KEYS), help="add 時に必須")
     ac.add_argument("--slug", required=True)
     ac.add_argument("--name")
     ac.add_argument("--stage")

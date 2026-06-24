@@ -21,7 +21,16 @@ CSV_PATH = DATA_DIR / "kintai.csv"
 ACTIVE_PATH = DATA_DIR / "active.md"
 
 # CSV の列（1 セッション＝1 行）
-COLUMNS = ["date", "day", "start", "end", "work_hours", "project", "memo"]
+COLUMNS = ["date", "day", "start", "end", "work_hours", "channel", "project", "memo"]
+
+# 運用中のチャンネル（slug → 表示名）。横断的な事務は "common"。
+CHANNELS = {
+    "kapuchu": "かぷちゅう（Vtuber切り抜き）",
+    "ijindamon": "いじんだもん（歴史エンタメ劇場）",
+    "gomasuke": "ごますけ（金融系Vtuber）",
+}
+# channel として許される値（チャンネル slug ＋ 横断 common）
+CHANNEL_KEYS = set(CHANNELS) | {"common"}
 
 # 月=0 … 日=6
 JP_WEEKDAYS = ["月", "火", "水", "木", "金", "土", "日"]

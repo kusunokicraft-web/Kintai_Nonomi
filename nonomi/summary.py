@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections import OrderedDict
 from typing import Dict, List, Optional, Tuple
 
-from . import csv_io, validate
+from . import config, csv_io, validate
 
 
 def _completed(rows: List[Dict[str, str]], month: Optional[str]) -> List[Dict[str, str]]:
@@ -24,6 +24,12 @@ def _hours(r: Dict[str, str]) -> float:
         return float(r.get("work_hours") or 0)
     except ValueError:
         return 0.0
+
+
+def _channel_label(r: Dict[str, str]) -> str:
+    """channel slug を表示名に。未知なら slug をそのまま。"""
+    ch = (r.get("channel") or "?").strip()
+    return config.CHANNELS.get(ch, ch)
 
 
 def _work_kind(r: Dict[str, str]) -> str:
@@ -62,12 +68,14 @@ def build(path=None, month: Optional[str] = None) -> str:
         return header + "\n\nまだ集計できる完了セッションがありません。"
 
     daily = _aggregate(target, lambda r: r.get("date", "?"))
+    by_channel = _aggregate(target, lambda r: _channel_label(r))
     by_project = _aggregate(target, lambda r: r.get("project", "?"))
     by_kind = _aggregate(target, _work_kind)
 
     parts = [
         header,
         _table("日次", daily, "date"),
+        _table("チャンネル別", by_channel, "channel"),
         _table("project別", by_project, "project"),
         _table("作業別", by_kind, "種別"),
     ]

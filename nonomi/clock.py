@@ -22,7 +22,9 @@ def compute_work_hours(start: str, end: str) -> str:
     return f"{minutes / 60.0:.2f}"
 
 
-def clock_in(project: str, memo: str, when: Optional[datetime] = None) -> Dict[str, str]:
+def clock_in(
+    channel: str, project: str, memo: str, when: Optional[datetime] = None
+) -> Dict[str, str]:
     """新しいセッションを起票（end/work_hours は空欄）。"""
     when = when or config.now_tokyo()
     date_str = when.strftime("%Y-%m-%d")
@@ -32,6 +34,7 @@ def clock_in(project: str, memo: str, when: Optional[datetime] = None) -> Dict[s
         "start": when.strftime("%H:%M"),
         "end": "",
         "work_hours": "",
+        "channel": channel,
         "project": project,
         "memo": memo,
     }

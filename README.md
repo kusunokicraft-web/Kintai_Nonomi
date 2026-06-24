@@ -24,7 +24,7 @@ tests/              # pytest（約束を守れているかの検証）
 
 ```bash
 # 始める（起票）
-python -m nonomi clock-in --project video:fren --memo "動画制作（フレンとこ・①企画）"
+python -m nonomi clock-in --channel ijindamon --project video:fren --memo "動画制作（フレンとこ・①企画）"
 
 # お疲れ（締め：end と work_hours を自動記入）
 python -m nonomi clock-out
@@ -39,7 +39,7 @@ python -m nonomi validate
 python -m nonomi status
 
 # 進行中案件スロット
-python -m nonomi active add   --slug fren --name フレンとこ --stage ①企画
+python -m nonomi active add   --channel ijindamon --slug fren --name フレンとこ --stage ①企画
 python -m nonomi active touch  --slug fren --stage ⑥誤字修正
 python -m nonomi active close  --slug fren
 ```
@@ -49,12 +49,22 @@ python -m nonomi active close  --slug fren
 - 過去の記録は書き換えません。訂正は新しい行を足す方針です。
 - `work_hours` は `end - start` を小数2桁で自動計算（日跨ぎは +24h）。
 - `day` は `date` から自動補完。
+- `channel` は登録チャンネルの slug または `common` のみ。外れた行は検証でお知らせします。
 - `project` は `video:<slug>` か `youtube` の2値のみ。外れた行は「未分類」として正直にお知らせします。
+
+## 運用チャンネル
+
+| slug | チャンネル | 種類 |
+|---|---|---|
+| `kapuchu` | かぷちゅう | Vtuber切り抜き |
+| `ijindamon` | いじんだもん | 歴史エンタメ劇場 |
+| `gomasuke` | ごますけ | 金融系Vtuber |
+| `common` | （横断） | 特定チャンネルに紐づかない事務 |
 
 ## CSV仕様
 
 ```
-date,day,start,end,work_hours,project,memo
+date,day,start,end,work_hours,channel,project,memo
 ```
 
 ## 開発

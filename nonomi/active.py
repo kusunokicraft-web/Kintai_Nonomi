@@ -15,7 +15,7 @@ _HEADER = "# 進行中の動画案件（最大3スロット）"
 
 
 def _empty_slot(n: int) -> Dict[str, str]:
-    return {"slot": str(n), "slug": EMPTY, "name": "", "stage": "", "last": ""}
+    return {"slot": str(n), "channel": "", "slug": EMPTY, "name": "", "stage": "", "last": ""}
 
 
 def load(path=None) -> List[Dict[str, str]]:
@@ -28,15 +28,16 @@ def load(path=None) -> List[Dict[str, str]]:
             if not line.startswith("|"):
                 continue
             cells = [c.strip() for c in line.strip("|").split("|")]
-            if len(cells) < 5 or cells[0] in ("slot", "") or set(cells[0]) <= set("-"):
+            if len(cells) < 6 or cells[0] in ("slot", "") or set(cells[0]) <= set("-"):
                 continue
             slots.append(
                 {
                     "slot": cells[0],
-                    "slug": cells[1],
-                    "name": cells[2],
-                    "stage": cells[3],
-                    "last": cells[4],
+                    "channel": cells[1],
+                    "slug": cells[2],
+                    "name": cells[3],
+                    "stage": cells[4],
+                    "last": cells[5],
                 }
             )
     # 3 スロットに整える
@@ -51,12 +52,13 @@ def save(slots: List[Dict[str, str]], path=None) -> None:
     lines = [
         _HEADER,
         "",
-        "| slot | slug | 通称 | 現在の工程 | 最終作業日 |",
-        "|------|--------|--------|------------|------------|",
+        "| slot | channel | slug | 通称 | 現在の工程 | 最終作業日 |",
+        "|------|---------|--------|--------|------------|------------|",
     ]
     for s in slots:
         lines.append(
-            f"| {s['slot']} | {s.get('slug') or EMPTY} | {s.get('name','')} | {s.get('stage','')} | {s.get('last','')} |"
+            f"| {s['slot']} | {s.get('channel','')} | {s.get('slug') or EMPTY} | "
+            f"{s.get('name','')} | {s.get('stage','')} | {s.get('last','')} |"
         )
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -73,14 +75,21 @@ def find(slug: str, slots: Optional[List[Dict[str, str]]] = None) -> Optional[in
     return None
 
 
-def add(slug: str, name: str, stage: str, last: str, path=None) -> List[Dict[str, str]]:
+def add(channel: str, slug: str, name: str, stage: str, last: str, path=None) -> List[Dict[str, str]]:
     """空きスロットに新案件を追加。空きが無ければ例外。"""
     slots = load(path)
     if find(slug, slots) is not None:
         raise ValueError(f"案件 {slug} はすでに進行中です。")
     for i, s in enumerate(slots):
         if _is_empty(s):
-            slots[i] = {"slot": str(i + 1), "slug": slug, "name": name, "stage": stage, "last": last}
+            slots[i] = {
+                "slot": str(i + 1),
+                "channel": channel,
+                "slug": slug,
+                "name": name,
+                "stage": stage,
+                "last": last,
+            }
             save(slots, path)
             return slots
     raise ValueError("3スロットが埋まっています。どれかを一区切りにしてからにしませんか？")
