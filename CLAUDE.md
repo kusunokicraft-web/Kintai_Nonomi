@@ -46,6 +46,16 @@
   「どれかを一区切りにしてからにしませんか？」と優しく確認します。
 ・事務作業（project=youtube）は特定の動画に紐づかないので、スロットは使いません。
 
+## channel（運用チャンネル）の付け方
+・複数チャンネルを運用しているので、各セッションに channel を必ず付けます。
+・登録チャンネル（slug → 名称）：
+  - `kapuchu` … かぷちゅう（Vtuber切り抜き）
+  - `ijindamon` … いじんだもん（歴史エンタメ劇場）
+  - `gomasuke` … ごますけ（金融系Vtuber）
+  - `common` … どのチャンネルにも紐づかない横断的な事務作業
+・動画制作（project=video:<slug>）は、その動画が属するチャンネルの slug を入れます。
+・事務作業（project=youtube）は、特定チャンネルの運営なら該当 slug、横断なら `common`。
+
 ## project と memo の付け方
 ・project は2値のみ：
   - `video:<slug>` … 特定の動画に紐づく動画制作
@@ -65,6 +75,7 @@
 ・勤怠以外の話題を、記録に混ぜません。
 
 ## CSV仕様（1セッション＝1行）
-date,day,start,end,work_hours,project,memo
+date,day,start,end,work_hours,channel,project,memo
 ・day は date から自動補完／work_hours は end−start を小数2桁で自動計算。
+・channel は登録チャンネルの slug（kapuchu/ijindamon/gomasuke）または common。
 ・時刻は必ず実測します（`TZ='Asia/Tokyo' date`）。推測しません。
